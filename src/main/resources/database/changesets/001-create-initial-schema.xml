@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd"
+        logicalFilePath="database/changesets/001-create-initial-schema.xml">
+
+    <changeSet id="1" author="Michael Andrews">
+
+        <comment>Create initial db schema</comment>
+
+        <createTable tableName="quiz" remarks="stores list of quizzes">
+
+            <column name="id" type="int unsigned" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="title" type="text">
+                <constraints nullable="false"/>
+            </column>
+            <column name="order" type="int">
+                <constraints unique="true" nullable="false"/>
+            </column>
+            <column name="created" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modified" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+
+        </createTable>
+
+        <createTable tableName="question" remarks="stores list of questions">
+
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="value" type="text">
+                <constraints nullable="false"/>
+            </column>
+            <column name="quiz-id" type="int unsigned">
+                <constraints foreignKeyName="fk-quiz-id" references="quiz(id)" nullable="false"/>
+            </column>
+            <column name="order" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modified" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+
+        </createTable>
+
+        <createTable tableName="answer" remarks="stores list of answers">
+
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="value" type="text">
+                <constraints nullable="false"/>
+            </column>
+            <column name="question-id" type="bigint">
+                <constraints foreignKeyName="fk-question-id" references="question(id)" nullable="false"/>
+            </column>
+            <column name="order" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modified" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+
+        </createTable>
+
+        <createIndex tableName="question" indexName="question-quiz-id-order-index" unique="true">
+
+            <column name="quiz-id"/>
+            <column name="order"/>
+
+        </createIndex>
+
+        <createIndex tableName="answer" indexName="answer-question-id-order-index" unique="true">
+
+            <column name="question-id"/>
+            <column name="order"/>
+
+        </createIndex>
+
+    </changeSet>
+
+</databaseChangeLog>
