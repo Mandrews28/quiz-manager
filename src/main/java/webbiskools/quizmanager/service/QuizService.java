@@ -10,6 +10,7 @@ import webbiskools.quizmanager.repository.AnswerRepository;
 import webbiskools.quizmanager.repository.QuestionRepository;
 import webbiskools.quizmanager.repository.QuizRepository;
 
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 @Service
@@ -63,5 +64,41 @@ public class QuizService {
         quizRepository.delete(quiz);
 
         return quizRepository.findAll();
+    }
+
+    public Iterable<Question> addQuestionToQuiz(int quizOrderNum, int questionOrderNum,  Map<String, String> preferenceInput) {
+        if (questionOrderNum < 1) {
+            throw new IllegalArgumentException(ErrorMessages.questionOrderNumTooLow(questionOrderNum));
+        }
+
+        Quiz quiz = quizRepository.findByOrder(quizOrderNum);
+        if (quiz == null) {
+            throw new NoSuchElementException(ErrorMessages.quizNotFound(quizOrderNum));
+        }
+
+        String questionText = preferenceInput.get("value");
+
+        Question currentLastQuestion = questionRepository.findFirstByQuizOrderByOrderDesc(quiz);
+        int currentNumOfQuestions;
+        if (currentLastQuestion == null) {
+            currentNumOfQuestions = 0;
+        } else {
+            currentNumOfQuestions = questionRepository.findFirstByQuizOrderByOrderDesc(quiz).getOrder();
+        }
+
+        if (questionOrderNum > currentNumOfQuestions + 1) {
+            throw new IllegalArgumentException(ErrorMessages.questionOrderNumTooHigh(quizOrderNum, questionOrderNum));
+        } else if (questionOrderNum == currentNumOfQuestions + 1) {
+        } else {
+            for (int i = currentNumOfQuestions; i >= questionOrderNum; i--) {
+                Question existingQuestion = questionRepository.findByQuizAndOrder(quiz, i);
+                existingQuestion.setOrder(i + 1);
+                questionRepository.save(existingQuestion);
+            }
+        }
+
+        questionRepository.save(new Question(questionText, quiz, questionOrderNum));
+
+        return questionRepository.findAllByQuiz(quiz);
     }
 }

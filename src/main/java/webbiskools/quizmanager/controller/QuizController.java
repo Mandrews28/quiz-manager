@@ -11,7 +11,9 @@ import webbiskools.quizmanager.model.Question;
 import webbiskools.quizmanager.model.Quiz;
 import webbiskools.quizmanager.service.QuizService;
 
+import javax.validation.Valid;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 @Api(description = "API to get, create, delete and modify quizzes")
@@ -35,7 +37,7 @@ public class QuizController {
     @ApiOperation(value = "Get a specific quiz with all questions")
     @GetMapping("/quiz/quiz{quiz-number}")
     public @ResponseBody
-    Iterable<Question> getOneQuiz(@PathVariable (value = "quiz-number") int quizOrderNum) {
+    Iterable<Question> getOneQuiz(@PathVariable(value = "quiz-number") int quizOrderNum) {
         try {
             return quizService.getQuiz(quizOrderNum);
         } catch (NoSuchElementException e) {
@@ -47,8 +49,8 @@ public class QuizController {
     @GetMapping("/quiz/quiz{quiz-number}/question{question-number}")
     public @ResponseBody
     Iterable<Answer> getOneQuestion(
-            @PathVariable (value = "quiz-number") int quizOrderNum,
-            @PathVariable (value = "question-number") int questionOrderNum) {
+            @PathVariable(value = "quiz-number") int quizOrderNum,
+            @PathVariable(value = "question-number") int questionOrderNum) {
         try {
             return quizService.getQuestion(quizOrderNum, questionOrderNum);
         } catch (NoSuchElementException e) {
@@ -59,10 +61,24 @@ public class QuizController {
     @ApiOperation(value = "Delete a quiz")
     @DeleteMapping("/quiz/quiz{quiz-number}")
     public @ResponseBody
-    Iterable<Quiz> deleteQuiz(@PathVariable (value = "quiz-number") int quizOrderNum) {
+    Iterable<Quiz> deleteQuiz(@PathVariable(value = "quiz-number") int quizOrderNum) {
         try {
             return quizService.deleteQuiz(quizOrderNum);
         } catch (NoSuchElementException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+    }
+
+    @ApiOperation(value = "Add a question to a quiz")
+    @PostMapping("/quiz/quiz{quiz-number}/question{question-number}")
+    public @ResponseBody
+    Iterable<Question> addQuestionToQuiz(
+            @PathVariable(value = "quiz-number") int quizOrderNum,
+            @PathVariable(value = "question-number") int questionOrderNum,
+            @Valid @RequestBody Map<String, String> questionInput) {
+        try {
+            return quizService.addQuestionToQuiz(quizOrderNum, questionOrderNum, questionInput);
+        } catch (NoSuchElementException | IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
     }

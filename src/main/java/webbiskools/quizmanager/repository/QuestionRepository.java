@@ -11,4 +11,6 @@ public interface QuestionRepository extends CrudRepository<Question, Long> {
 
     Question findByQuizAndOrder(Quiz quiz, int questionOrder);
 
+    Question findFirstByQuizOrderByOrderDesc(Quiz quiz);
+
 }
