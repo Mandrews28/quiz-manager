@@ -4,10 +4,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import webbiskools.quizmanager.model.Answer;
 import webbiskools.quizmanager.model.Question;
@@ -54,6 +51,17 @@ public class QuizController {
             @PathVariable (value = "question-number") int questionOrderNum) {
         try {
             return quizService.getQuestion(quizOrderNum, questionOrderNum);
+        } catch (NoSuchElementException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+    }
+
+    @ApiOperation(value = "Delete a quiz")
+    @DeleteMapping("/quiz/quiz{quiz-number}")
+    public @ResponseBody
+    Iterable<Quiz> deleteQuiz(@PathVariable (value = "quiz-number") int quizOrderNum) {
+        try {
+            return quizService.deleteQuiz(quizOrderNum);
         } catch (NoSuchElementException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }

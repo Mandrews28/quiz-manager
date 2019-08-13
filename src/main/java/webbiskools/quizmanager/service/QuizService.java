@@ -31,7 +31,6 @@ public class QuizService {
     }
 
     public Iterable<Question> getQuiz(int quizOrderNum) {
-
         Quiz quiz = quizRepository.findByOrder(quizOrderNum);
 
         if (quiz == null) {
@@ -42,20 +41,27 @@ public class QuizService {
     }
 
     public Iterable<Answer> getQuestion(int quizOrderNum, int questionOrderNum) {
-
         Quiz quiz = quizRepository.findByOrder(quizOrderNum);
-
         if (quiz == null) {
             throw new NoSuchElementException(ErrorMessages.quizNotFound(quizOrderNum));
         }
 
         Question question = questionRepository.findByQuizAndOrder(quiz, questionOrderNum);
-
         if (question == null) {
             throw new NoSuchElementException(ErrorMessages.questionNotFound(quizOrderNum, questionOrderNum));
         }
 
         return answerRepository.findAllByQuestion(question);
+    }
 
+    public Iterable<Quiz> deleteQuiz(int quizOrderNum) {
+        Quiz quiz = quizRepository.findByOrder(quizOrderNum);
+        if (quiz == null) {
+            throw new NoSuchElementException(ErrorMessages.quizNotFound(quizOrderNum));
+        }
+
+        quizRepository.delete(quiz);
+
+        return quizRepository.findAll();
     }
 }
