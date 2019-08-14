@@ -7,6 +7,10 @@ import webbiskools.quizmanager.model.Question;
 
 @RepositoryRestResource
 public interface AnswerRepository extends CrudRepository<Answer, Long> {
-    Iterable<Answer> findAllByQuestion(Question quiz);
+    Iterable<Answer> findAllByQuestion(Question question);
+
+    Answer findByQuestionAndOrder(Question question, int answerOrder);
+
+    Answer findFirstByQuestionOrderByOrderDesc(Question question);
 
 }

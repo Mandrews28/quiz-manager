@@ -20,6 +20,9 @@ public class QuizService {
     private QuestionRepository questionRepository;
     private AnswerRepository answerRepository;
 
+    public static final int MINIMUM_NUMBER_OF_ANSWERS = 3;
+    public static final int MAXIMUM_NUMBER_OF_ANSWERS = 5;
+
     @Autowired
     public QuizService(QuizRepository quizRepository, QuestionRepository questionRepository, AnswerRepository answerRepository) {
         this.quizRepository = quizRepository;
@@ -73,13 +76,13 @@ public class QuizService {
         return quizRepository.findAll();
     }
 
-    public Iterable<Question> addQuestionToQuiz(int quizOrderNum, int questionOrderNum, Map<String, String> preferenceInput) {
+    public Iterable<Question> addQuestionToQuiz(int quizOrderNum, int questionOrderNum, Map<String, String> questionInput) {
         if (questionOrderNum < 1) {
             throw new IllegalArgumentException(ErrorMessages.questionOrderNumTooLow(questionOrderNum));
         }
         Quiz quiz = findQuizByOrder(quizOrderNum);
 
-        String questionText = preferenceInput.get("value");
+        String questionText = questionInput.get("value");
 
         int orderOfLastQuestion = getOrderNumOfLastQuestion(quiz);
 
@@ -118,16 +121,49 @@ public class QuizService {
         return questionRepository.findAllByQuiz(quiz);
     }
 
-    public Iterable<Question> editQuestionValue(int quizOrderNum, int questionOrderNum, Map<String, String> preferenceInput) {
+    public Iterable<Question> editQuestionValue(int quizOrderNum, int questionOrderNum, Map<String, String> questionInput) {
         Quiz quiz = findQuizByOrder(quizOrderNum);
         Question question = findQuestionByQuizAndOrder(quiz, questionOrderNum);
 
-        String newQuestionText = preferenceInput.get("value");
+        String newQuestionText = questionInput.get("value");
 
         question.setValue(newQuestionText);
         questionRepository.save(question);
 
         return questionRepository.findAllByQuiz(quiz);
+    }
+
+
+    public Iterable<Answer> addAnswerToQuestion(int quizOrderNum, int questionOrderNum, int answerOrderNum, Map<String, String> answerInput) {
+        if (answerOrderNum < 1) {
+            throw new IllegalArgumentException(ErrorMessages.answerOrderNumTooLow(answerOrderNum));
+        } else if (answerOrderNum > MAXIMUM_NUMBER_OF_ANSWERS) {
+            throw new IllegalArgumentException(ErrorMessages.answerOrderNumExceedsMaximum(answerOrderNum));
+        }
+
+        Quiz quiz = findQuizByOrder(quizOrderNum);
+        Question question = findQuestionByQuizAndOrder(quiz, questionOrderNum);
+
+        String answerText = answerInput.get("value");
+
+        int orderOfLastAnswer = getOrderNumOfLastAnswer(question);
+
+        if (orderOfLastAnswer >= 5) {
+            throw new IllegalArgumentException(ErrorMessages.questionIsAtMaximumAnswerLimit(quizOrderNum, questionOrderNum));
+        } else if (answerOrderNum > orderOfLastAnswer + 1) {
+            throw new IllegalArgumentException(ErrorMessages.answerOrderNumTooHigh(quizOrderNum, questionOrderNum, answerOrderNum));
+        } else if (answerOrderNum == orderOfLastAnswer + 1) {
+        } else {
+            for (int i = orderOfLastAnswer; i >= answerOrderNum; i--) {
+                Answer existingAnswer = answerRepository.findByQuestionAndOrder(question, i);
+                existingAnswer.setOrder(i + 1);
+                answerRepository.save(existingAnswer);
+            }
+        }
+
+        answerRepository.save(new Answer(answerText, question, answerOrderNum));
+
+        return answerRepository.findAllByQuestion(question);
     }
 
     private Quiz findQuizByOrder(int quizOrderNum) throws NoSuchElementException {
@@ -170,5 +206,17 @@ public class QuizService {
         }
 
         return orderOfLastQuestion;
+    }
+
+    private int getOrderNumOfLastAnswer(Question question) {
+        Answer currentLastAnswer = answerRepository.findFirstByQuestionOrderByOrderDesc(question);
+        int orderOfLastAnswer;
+        if (currentLastAnswer == null) {
+            orderOfLastAnswer = 0;
+        } else {
+            orderOfLastAnswer = currentLastAnswer.getOrder();
+        }
+
+        return orderOfLastAnswer;
     }
 }

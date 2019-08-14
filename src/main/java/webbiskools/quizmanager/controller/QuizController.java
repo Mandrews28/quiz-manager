@@ -109,4 +109,18 @@ public class QuizController {
         }
     }
 
+    @ApiOperation(value = "Add an answer to a question")
+    @PostMapping("/quiz/quiz{quiz-number}/question{question-number}/answer{answer-number}")
+    public @ResponseBody
+    Iterable<Answer> addAnswerToQuestion(
+            @PathVariable(value = "quiz-number") int quizOrderNum,
+            @PathVariable(value = "question-number") int questionOrderNum,
+            @PathVariable(value = "answer-number") int answerOrderNum,
+            @Valid @RequestBody Map<String, String> answerInput) {
+        try {
+            return quizService.addAnswerToQuestion(quizOrderNum, questionOrderNum, answerOrderNum, answerInput);
+        } catch (NoSuchElementException | IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+    }
 }
