@@ -95,4 +95,18 @@ public class QuizController {
         }
     }
 
+    @ApiOperation(value = "Edit the text of a question")
+    @PatchMapping("/quiz/quiz{quiz-number}/question{question-number}")
+    public @ResponseBody
+    Iterable<Question> editQuestionValue(
+            @PathVariable(value = "quiz-number") int quizOrderNum,
+            @PathVariable(value = "question-number") int questionOrderNum,
+            @Valid @RequestBody Map<String, String> questionInput) {
+        try {
+            return quizService.editQuestionValue(quizOrderNum, questionOrderNum, questionInput);
+        } catch (NoSuchElementException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+    }
+
 }
