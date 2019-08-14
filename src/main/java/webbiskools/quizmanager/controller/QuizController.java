@@ -12,7 +12,6 @@ import webbiskools.quizmanager.model.Quiz;
 import webbiskools.quizmanager.service.QuizService;
 
 import javax.validation.Valid;
-import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
@@ -79,6 +78,19 @@ public class QuizController {
         try {
             return quizService.addQuestionToQuiz(quizOrderNum, questionOrderNum, questionInput);
         } catch (NoSuchElementException | IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+    }
+
+    @ApiOperation(value = "Delete a question from a quiz")
+    @DeleteMapping("/quiz/quiz{quiz-number}/question{question-number}")
+    public @ResponseBody
+    Iterable<Question> deleteQuestionFromQuiz(
+            @PathVariable(value = "quiz-number") int quizOrderNum,
+            @PathVariable(value = "question-number") int questionOrderNum) {
+        try {
+            return quizService.deleteQuestionFromQuiz(quizOrderNum, questionOrderNum);
+        } catch (NoSuchElementException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
     }

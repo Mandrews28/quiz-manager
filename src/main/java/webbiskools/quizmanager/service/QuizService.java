@@ -56,41 +56,38 @@ public class QuizService {
     }
 
     public Iterable<Quiz> deleteQuiz(int quizOrderNum) {
-        Quiz quiz = quizRepository.findByOrder(quizOrderNum);
-        if (quiz == null) {
-            throw new NoSuchElementException(ErrorMessages.quizNotFound(quizOrderNum));
-        }
+        Quiz quiz = findQuizByOrder(quizOrderNum);
 
         quizRepository.delete(quiz);
+
+        int orderOfLastQuiz = getOrderNumOfLastQuiz();
+
+        if (quizOrderNum < orderOfLastQuiz) {
+            for (int i = quizOrderNum + 1; i <= orderOfLastQuiz; i++) {
+                Quiz existingQuiz = quizRepository.findByOrder(i);
+                existingQuiz.setOrder(i - 1);
+                quizRepository.save(existingQuiz);
+            }
+        }
 
         return quizRepository.findAll();
     }
 
-    public Iterable<Question> addQuestionToQuiz(int quizOrderNum, int questionOrderNum,  Map<String, String> preferenceInput) {
+    public Iterable<Question> addQuestionToQuiz(int quizOrderNum, int questionOrderNum, Map<String, String> preferenceInput) {
         if (questionOrderNum < 1) {
             throw new IllegalArgumentException(ErrorMessages.questionOrderNumTooLow(questionOrderNum));
         }
-
-        Quiz quiz = quizRepository.findByOrder(quizOrderNum);
-        if (quiz == null) {
-            throw new NoSuchElementException(ErrorMessages.quizNotFound(quizOrderNum));
-        }
+        Quiz quiz = findQuizByOrder(quizOrderNum);
 
         String questionText = preferenceInput.get("value");
 
-        Question currentLastQuestion = questionRepository.findFirstByQuizOrderByOrderDesc(quiz);
-        int currentNumOfQuestions;
-        if (currentLastQuestion == null) {
-            currentNumOfQuestions = 0;
-        } else {
-            currentNumOfQuestions = questionRepository.findFirstByQuizOrderByOrderDesc(quiz).getOrder();
-        }
+        int orderOfLastQuestion = getOrderNumOfLastQuestion(quiz);
 
-        if (questionOrderNum > currentNumOfQuestions + 1) {
+        if (questionOrderNum > orderOfLastQuestion + 1) {
             throw new IllegalArgumentException(ErrorMessages.questionOrderNumTooHigh(quizOrderNum, questionOrderNum));
-        } else if (questionOrderNum == currentNumOfQuestions + 1) {
+        } else if (questionOrderNum == orderOfLastQuestion + 1) {
         } else {
-            for (int i = currentNumOfQuestions; i >= questionOrderNum; i--) {
+            for (int i = orderOfLastQuestion; i >= questionOrderNum; i--) {
                 Question existingQuestion = questionRepository.findByQuizAndOrder(quiz, i);
                 existingQuestion.setOrder(i + 1);
                 questionRepository.save(existingQuestion);
@@ -100,5 +97,66 @@ public class QuizService {
         questionRepository.save(new Question(questionText, quiz, questionOrderNum));
 
         return questionRepository.findAllByQuiz(quiz);
+    }
+
+    public Iterable<Question> deleteQuestionFromQuiz(int quizOrderNum, int questionOrderNum) {
+        Quiz quiz = findQuizByOrder(quizOrderNum);
+        Question question = findQuestionByQuizAndOrder(quiz, questionOrderNum);
+
+        questionRepository.delete(question);
+
+        int orderOfLastQuestion = getOrderNumOfLastQuestion(quiz);
+
+        if (questionOrderNum < orderOfLastQuestion) {
+            for (int i = questionOrderNum + 1; i <= orderOfLastQuestion; i++) {
+                Question existingQuestion = questionRepository.findByQuizAndOrder(quiz, i);
+                existingQuestion.setOrder(i - 1);
+                questionRepository.save(existingQuestion);
+            }
+        }
+
+        return questionRepository.findAllByQuiz(quiz);
+    }
+
+    private Quiz findQuizByOrder(int quizOrderNum) throws NoSuchElementException {
+        Quiz quiz = quizRepository.findByOrder(quizOrderNum);
+        if (quiz == null) {
+            throw new NoSuchElementException(ErrorMessages.quizNotFound(quizOrderNum));
+        }
+
+        return quiz;
+    }
+
+    private Question findQuestionByQuizAndOrder(Quiz quiz, int questionOrderNum) throws NoSuchElementException {
+        Question question = questionRepository.findByQuizAndOrder(quiz, questionOrderNum);
+        if (question == null) {
+            throw new NoSuchElementException(ErrorMessages.questionNotFound(quiz.getOrder(), questionOrderNum));
+        }
+
+        return question;
+    }
+
+    private int getOrderNumOfLastQuiz() {
+        Quiz currentLastQuiz = quizRepository.findFirstByOrderByOrderDesc();
+        int orderOfLastQuiz;
+        if (currentLastQuiz == null) {
+            orderOfLastQuiz = 0;
+        } else {
+            orderOfLastQuiz = currentLastQuiz.getOrder();
+        }
+
+        return orderOfLastQuiz;
+    }
+
+    private int getOrderNumOfLastQuestion(Quiz quiz) {
+        Question currentLastQuestion = questionRepository.findFirstByQuizOrderByOrderDesc(quiz);
+        int orderOfLastQuestion;
+        if (currentLastQuestion == null) {
+            orderOfLastQuestion = 0;
+        } else {
+            orderOfLastQuestion = currentLastQuestion.getOrder();
+        }
+
+        return orderOfLastQuestion;
     }
 }
