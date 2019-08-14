@@ -13,4 +13,5 @@ public interface QuestionRepository extends CrudRepository<Question, Long> {
 
     Question findFirstByQuizOrderByOrderDesc(Quiz quiz);
 
+    void deleteAllByQuiz(Quiz quiz);
 }

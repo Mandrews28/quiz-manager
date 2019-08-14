@@ -2,6 +2,7 @@ package webbiskools.quizmanager.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import webbiskools.quizmanager.ErrorMessages;
 import webbiskools.quizmanager.model.Answer;
 import webbiskools.quizmanager.model.Question;
@@ -58,9 +59,14 @@ public class QuizService {
         return answerRepository.findAllByQuestion(question);
     }
 
+    @Transactional
     public Iterable<Quiz> deleteQuiz(int quizOrderNum) {
         Quiz quiz = findQuizByOrder(quizOrderNum);
 
+        for (Question question : questionRepository.findAllByQuiz(quiz)) {
+            answerRepository.deleteAllByQuestion(question);
+        }
+        questionRepository.deleteAllByQuiz(quiz);
         quizRepository.delete(quiz);
 
         int orderOfLastQuiz = getOrderNumOfLastQuiz();
@@ -102,10 +108,12 @@ public class QuizService {
         return questionRepository.findAllByQuiz(quiz);
     }
 
+    @Transactional
     public Iterable<Question> deleteQuestionFromQuiz(int quizOrderNum, int questionOrderNum) {
         Quiz quiz = findQuizByOrder(quizOrderNum);
         Question question = findQuestionByQuizAndOrder(quiz, questionOrderNum);
 
+        answerRepository.deleteAllByQuestion(question);
         questionRepository.delete(question);
 
         int orderOfLastQuestion = getOrderNumOfLastQuestion(quiz);
