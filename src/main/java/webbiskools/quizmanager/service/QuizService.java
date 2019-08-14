@@ -11,6 +11,7 @@ import webbiskools.quizmanager.repository.AnswerRepository;
 import webbiskools.quizmanager.repository.QuestionRepository;
 import webbiskools.quizmanager.repository.QuizRepository;
 
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
@@ -32,7 +33,7 @@ public class QuizService {
     }
 
     public Iterable<Quiz> getAllQuizzes() {
-        return quizRepository.findAll();
+        return quizRepository.findAllByOrderByOrderAsc();
     }
 
     public Iterable<Question> getQuiz(int quizOrderNum) {
@@ -59,6 +60,43 @@ public class QuizService {
         return answerRepository.findAllByQuestion(question);
     }
 
+    public Iterable<Quiz> createQuiz(int quizOrderNum, Map<String, Object> quizInput) {
+        String quizTitle = String.valueOf(quizInput.get("title"));
+        ArrayList<Map<String, Object>> questionList = (ArrayList<Map<String, Object>>) quizInput.get("questions");
+
+        int orderOfLastQuiz = getOrderNumOfLastQuiz();
+
+        if (quizOrderNum > orderOfLastQuiz + 1) {
+            throw new IllegalArgumentException(ErrorMessages.quizOrderNumTooHigh(quizOrderNum));
+        } else if (quizOrderNum == orderOfLastQuiz + 1) {
+        } else {
+            for (int i = orderOfLastQuiz; i >= quizOrderNum; i--) {
+                Quiz existingQuiz = quizRepository.findByOrder(i);
+                existingQuiz.setOrder(i + 1);
+                quizRepository.save(existingQuiz);
+            }
+        }
+
+        Quiz quiz = quizRepository.save(new Quiz(quizTitle, quizOrderNum));
+
+        for (Map<String, Object> questionInput : questionList) {
+            int questionOrderNum = Integer.parseInt(String.valueOf(questionInput.get("question-order")));
+            String questionText = String.valueOf(questionInput.get("question-value"));
+            ArrayList<Map<String, String>> answerList = (ArrayList<Map<String, String>>) questionInput.get("answers");
+
+            Question question = questionRepository.save(new Question(questionText, quiz, questionOrderNum));
+
+            for (Map<String, String> answerInput : answerList) {
+                int answerOrderNum = Integer.parseInt(answerInput.get("answer-order"));
+                String answerText = answerInput.get("answer-value");
+
+                answerRepository.save(new Answer(answerText, question, answerOrderNum));
+            }
+        }
+
+        return quizRepository.findAllByOrderByOrderAsc();
+    }
+
     @Transactional
     public Iterable<Quiz> deleteQuiz(int quizOrderNum) {
         Quiz quiz = findQuizByOrder(quizOrderNum);
@@ -79,7 +117,7 @@ public class QuizService {
             }
         }
 
-        return quizRepository.findAll();
+        return quizRepository.findAllByOrderByOrderAsc();
     }
 
     public Iterable<Question> addQuestionToQuiz(int quizOrderNum, int questionOrderNum, Map<String, String> questionInput) {

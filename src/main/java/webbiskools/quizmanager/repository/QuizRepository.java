@@ -6,6 +6,8 @@ import webbiskools.quizmanager.model.Quiz;
 
 @RepositoryRestResource
 public interface QuizRepository extends CrudRepository<Quiz, Long> {
+    Iterable<Quiz> findAllByOrderByOrderAsc();
+
     Quiz findByOrder(int order);
 
     Quiz findFirstByOrderByOrderDesc();

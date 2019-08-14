@@ -5,14 +5,14 @@ import webbiskools.quizmanager.service.QuizService;
 public class ErrorMessages {
 
     private static final String VALUE_NOT_IN_DB = "does not exist in the database";
-    private static final String ORDER_NUM_TOO_HIGH = "is too high and out of sequence. If you want to add a question " +
-            "to the end of the quiz, the order should equal the number of questions plus one";
-    private static final String ORDER_NUM_TOO_LOW = " is too low. The order value cannot be 0 or below because the " +
+    private static final String ORDER_NUM_TOO_HIGH = "is too high and out of sequence. The order number cannot be " +
+            "more than one larger than the current maximum as order numbers should be sequential";
+    private static final String ORDER_NUM_TOO_LOW = "is too low. The order value cannot be 0 or below because the " +
             "values start at 1 and increase incrementally";
 
 
     public static String quizNotFound(int quizNum) {
-        return "Quiz number " + quizNum + " " + VALUE_NOT_IN_DB;
+        return quizNumErrorStart(quizNum) + VALUE_NOT_IN_DB;
     }
 
     public static String questionNotFound(int quizNum, int questionNum) {
@@ -23,24 +23,32 @@ public class ErrorMessages {
         return quizAndQuestionAndAnswerNumErrorStart(quizNum, questionNum, answerNum) + VALUE_NOT_IN_DB;
     }
 
-    public static String questionOrderNumTooHigh(int quizNum, int questionNum) {
-        return quizAndQuestionNumErrorStart(quizNum, questionNum) + ORDER_NUM_TOO_HIGH;
+    public static String quizOrderNumTooHigh(int quizNum) {
+        return quizNumErrorStart(quizNum) + ORDER_NUM_TOO_HIGH;
     }
 
-    public static String questionOrderNumTooLow(int questionNum) {
-        return "The question number " + questionNum + ORDER_NUM_TOO_LOW;
+    public static String questionOrderNumTooHigh(int quizNum, int questionNum) {
+        return quizAndQuestionNumErrorStart(quizNum, questionNum) + ORDER_NUM_TOO_HIGH;
     }
 
     public static String answerOrderNumTooHigh(int quizNum, int questionNum, int answerNum) {
         return quizAndQuestionAndAnswerNumErrorStart(quizNum, questionNum, answerNum) + ORDER_NUM_TOO_HIGH;
     }
 
+    public static String quizOrderNumTooLow(int quizNum) {
+        return quizNumErrorStart(quizNum) + ORDER_NUM_TOO_LOW;
+    }
+
+    public static String questionOrderNumTooLow(int questionNum) {
+        return questionNumErrorStart(questionNum) + ORDER_NUM_TOO_LOW;
+    }
+
     public static String answerOrderNumTooLow(int answerNum) {
-        return "The answer number " + answerNum + ORDER_NUM_TOO_LOW;
+        return answerNumErrorStart(answerNum) + ORDER_NUM_TOO_LOW;
     }
 
     public static String answerOrderNumExceedsMaximum(int answerNum) {
-        return "The answer number " + answerNum + " exceeds the maximum number of answers that a question can have. " +
+        return answerNumErrorStart(answerNum) + "exceeds the maximum number of answers that a question can have. " +
                 "The maximum is " + QuizService.MAXIMUM_NUMBER_OF_ANSWERS;
     }
 
@@ -54,6 +62,18 @@ public class ErrorMessages {
                 QuizService.MINIMUM_NUMBER_OF_ANSWERS + ". Unable to delete an answer";
     }
 
+
+    private static String quizNumErrorStart(int quizNum) {
+        return "The quiz number " + quizNum + " ";
+    }
+
+    private static String questionNumErrorStart(int questionNum) {
+        return "The question number " + questionNum + " ";
+    }
+
+    private static String answerNumErrorStart(int answerNum) {
+        return "The answer number " + answerNum + " ";
+    }
 
     private static String quizAndQuestionNumErrorStart(int quizNum, int questionNum) {
         return "Question number " + questionNum + " of quiz number " + quizNum + " ";
