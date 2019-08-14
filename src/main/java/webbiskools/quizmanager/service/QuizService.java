@@ -133,7 +133,6 @@ public class QuizService {
         return questionRepository.findAllByQuiz(quiz);
     }
 
-
     public Iterable<Answer> addAnswerToQuestion(int quizOrderNum, int questionOrderNum, int answerOrderNum, Map<String, String> answerInput) {
         if (answerOrderNum < 1) {
             throw new IllegalArgumentException(ErrorMessages.answerOrderNumTooLow(answerOrderNum));
@@ -148,8 +147,8 @@ public class QuizService {
 
         int orderOfLastAnswer = getOrderNumOfLastAnswer(question);
 
-        if (orderOfLastAnswer >= 5) {
-            throw new IllegalArgumentException(ErrorMessages.questionIsAtMaximumAnswerLimit(quizOrderNum, questionOrderNum));
+        if (orderOfLastAnswer >= MAXIMUM_NUMBER_OF_ANSWERS) {
+            throw new IllegalStateException(ErrorMessages.questionIsAtMaximumAnswerLimit(quizOrderNum, questionOrderNum));
         } else if (answerOrderNum > orderOfLastAnswer + 1) {
             throw new IllegalArgumentException(ErrorMessages.answerOrderNumTooHigh(quizOrderNum, questionOrderNum, answerOrderNum));
         } else if (answerOrderNum == orderOfLastAnswer + 1) {
@@ -165,6 +164,29 @@ public class QuizService {
 
         return answerRepository.findAllByQuestion(question);
     }
+
+    public Iterable<Answer> deleteAnswerFromQuestion(int quizOrderNum, int questionOrderNum, int answerOrderNum) {
+        Quiz quiz = findQuizByOrder(quizOrderNum);
+        Question question = findQuestionByQuizAndOrder(quiz, questionOrderNum);
+        Answer answer = findAnswerByQuestionAndOrder(question, answerOrderNum);
+
+        int orderOfLastAnswer = getOrderNumOfLastAnswer(question);
+
+        if (orderOfLastAnswer <= MINIMUM_NUMBER_OF_ANSWERS) {
+            throw new IllegalStateException(ErrorMessages.questionIsAtMinimumAnswerLimit(quizOrderNum, questionOrderNum));
+        } else if (answerOrderNum < orderOfLastAnswer) {
+            answerRepository.delete(answer);
+
+            for (int i = answerOrderNum + 1; i <= orderOfLastAnswer; i++) {
+                Answer existingAnswer = answerRepository.findByQuestionAndOrder(question, i);
+                existingAnswer.setOrder(i - 1);
+                answerRepository.save(existingAnswer);
+            }
+        }
+
+        return answerRepository.findAllByQuestion(question);
+    }
+
 
     private Quiz findQuizByOrder(int quizOrderNum) throws NoSuchElementException {
         Quiz quiz = quizRepository.findByOrder(quizOrderNum);
@@ -182,6 +204,15 @@ public class QuizService {
         }
 
         return question;
+    }
+
+    private Answer findAnswerByQuestionAndOrder(Question question, int answerOrderNum) throws NoSuchElementException {
+        Answer answer = answerRepository.findByQuestionAndOrder(question, answerOrderNum);
+        if (answer == null) {
+            throw new NoSuchElementException(ErrorMessages.answerNotFound(question.getQuiz().getOrder(), question.getOrder(), answerOrderNum));
+        }
+
+        return answer;
     }
 
     private int getOrderNumOfLastQuiz() {

@@ -19,6 +19,10 @@ public class ErrorMessages {
         return quizAndQuestionNumErrorStart(quizNum, questionNum) + VALUE_NOT_IN_DB;
     }
 
+    public static String answerNotFound(int quizNum, int questionNum, int answerNum) {
+        return quizAndQuestionAndAnswerNumErrorStart(quizNum, questionNum, answerNum) + VALUE_NOT_IN_DB;
+    }
+
     public static String questionOrderNumTooHigh(int quizNum, int questionNum) {
         return quizAndQuestionNumErrorStart(quizNum, questionNum) + ORDER_NUM_TOO_HIGH;
     }
@@ -41,8 +45,13 @@ public class ErrorMessages {
     }
 
     public static String questionIsAtMaximumAnswerLimit(int quizNum, int questionNum) {
-        return quizAndQuestionNumErrorStart(quizNum, questionNum) + "already has the maxmimum " +
+        return quizAndQuestionNumErrorStart(quizNum, questionNum) + "already has the maximum " +
                 "number of answers of " + QuizService.MAXIMUM_NUMBER_OF_ANSWERS + ". Unable to add another answer";
+    }
+
+    public static String questionIsAtMinimumAnswerLimit(int quizNum, int questionNum) {
+        return quizAndQuestionNumErrorStart(quizNum, questionNum) + "has the minimum number of answers of " +
+                QuizService.MINIMUM_NUMBER_OF_ANSWERS + ". Unable to delete an answer";
     }
 
 

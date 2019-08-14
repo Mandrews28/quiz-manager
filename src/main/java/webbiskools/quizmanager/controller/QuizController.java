@@ -119,7 +119,21 @@ public class QuizController {
             @Valid @RequestBody Map<String, String> answerInput) {
         try {
             return quizService.addAnswerToQuestion(quizOrderNum, questionOrderNum, answerOrderNum, answerInput);
-        } catch (NoSuchElementException | IllegalArgumentException e) {
+        } catch (NoSuchElementException | IllegalArgumentException | IllegalStateException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+    }
+
+    @ApiOperation(value = "Delete an answer from a question")
+    @DeleteMapping("/quiz/quiz{quiz-number}/question{question-number}/answer{answer-number}")
+    public @ResponseBody
+    Iterable<Answer> deleteAnswerFromQuestion(
+            @PathVariable(value = "quiz-number") int quizOrderNum,
+            @PathVariable(value = "question-number") int questionOrderNum,
+            @PathVariable(value = "answer-number") int answerOrderNum) {
+        try {
+            return quizService.deleteAnswerFromQuestion(quizOrderNum, questionOrderNum, answerOrderNum);
+        } catch (NoSuchElementException | IllegalStateException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
     }
