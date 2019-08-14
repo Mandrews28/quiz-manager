@@ -187,6 +187,19 @@ public class QuizService {
         return answerRepository.findAllByQuestion(question);
     }
 
+    public Iterable<Answer> editAnswerValue(int quizOrderNum, int questionOrderNum, int answerOrderNum, Map<String, String> answerInput) {
+        Quiz quiz = findQuizByOrder(quizOrderNum);
+        Question question = findQuestionByQuizAndOrder(quiz, questionOrderNum);
+        Answer answer = findAnswerByQuestionAndOrder(question, answerOrderNum);
+
+        String newAnswerText = answerInput.get("value");
+
+        answer.setValue(newAnswerText);
+        answerRepository.save(answer);
+
+        return answerRepository.findAllByQuestion(question);
+    }
+
 
     private Quiz findQuizByOrder(int quizOrderNum) throws NoSuchElementException {
         Quiz quiz = quizRepository.findByOrder(quizOrderNum);

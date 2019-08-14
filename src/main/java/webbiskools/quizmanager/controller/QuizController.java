@@ -137,4 +137,19 @@ public class QuizController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
     }
+
+    @ApiOperation(value = "Edit the text of an answer")
+    @PatchMapping("/quiz/quiz{quiz-number}/question{question-number}/answer{answer-number}")
+    public @ResponseBody
+    Iterable<Answer> editAnswerValue(
+            @PathVariable(value = "quiz-number") int quizOrderNum,
+            @PathVariable(value = "question-number") int questionOrderNum,
+            @PathVariable(value = "answer-number") int answerOrderNum,
+            @Valid @RequestBody Map<String, String> answerInput) {
+        try {
+            return quizService.editAnswerValue(quizOrderNum, questionOrderNum, answerOrderNum, answerInput);
+        } catch (NoSuchElementException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+    }
 }
