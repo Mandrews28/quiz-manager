@@ -15,6 +15,7 @@ import javax.validation.Valid;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
+@CrossOrigin
 @Api(description = "API to get, create, delete and modify quizzes")
 @RestController
 public class QuizController {
