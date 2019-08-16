@@ -120,6 +120,18 @@ public class QuizService {
         return quizRepository.findAllByOrderByOrderAsc();
     }
 
+
+    public Iterable<Quiz> editQuizTitle(int quizOrderNum, Map<String, String> quizInput) {
+        Quiz quiz = findQuizByOrder(quizOrderNum);
+
+        String newQuizText = quizInput.get("title");
+
+        quiz.setTitle(newQuizText);
+        quizRepository.save(quiz);
+
+        return quizRepository.findAllByOrderByOrderAsc();
+    }
+
     public Iterable<Question> addQuestionToQuiz(int quizOrderNum, int questionOrderNum, Map<String, String> questionInput) {
         if (questionOrderNum < 1) {
             throw new IllegalArgumentException(ErrorMessages.questionOrderNumTooLow(questionOrderNum));

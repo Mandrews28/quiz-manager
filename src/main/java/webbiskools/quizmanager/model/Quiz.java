@@ -53,6 +53,10 @@ public class Quiz {
         return title;
     }
 
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
     public int getOrder() {
         return order;
     }
