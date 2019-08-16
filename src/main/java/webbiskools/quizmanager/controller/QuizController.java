@@ -59,11 +59,24 @@ public class QuizController {
     }
 
     @ApiOperation(value = "Create a quiz")
+    @PostMapping("/quiz/full-quiz{quiz-number}")
+    public @ResponseBody
+    Iterable<Quiz> createFullQuiz(
+            @PathVariable(value = "quiz-number") int quizOrderNum,
+            @RequestBody Map<String, Object> quizInput) {
+        try {
+            return quizService.createFullQuiz(quizOrderNum, quizInput);
+        } catch (NoSuchElementException | IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+    }
+
+    @ApiOperation(value = "Create a quiz")
     @PostMapping("/quiz/quiz{quiz-number}")
     public @ResponseBody
     Iterable<Quiz> createQuiz(
             @PathVariable(value = "quiz-number") int quizOrderNum,
-            @RequestBody Map<String, Object> quizInput) {
+            @RequestBody Map<String, String> quizInput) {
         try {
             return quizService.createQuiz(quizOrderNum, quizInput);
         } catch (NoSuchElementException | IllegalArgumentException e) {

@@ -60,7 +60,7 @@ public class QuizService {
         return answerRepository.findAllByQuestion(question);
     }
 
-    public Iterable<Quiz> createQuiz(int quizOrderNum, Map<String, Object> quizInput) {
+    public Iterable<Quiz> createFullQuiz(int quizOrderNum, Map<String, Object> quizInput) {
         String quizTitle = String.valueOf(quizInput.get("title"));
         ArrayList<Map<String, Object>> questionList = (ArrayList<Map<String, Object>>) quizInput.get("questions");
 
@@ -93,6 +93,27 @@ public class QuizService {
                 answerRepository.save(new Answer(answerText, question, answerOrderNum));
             }
         }
+
+        return quizRepository.findAllByOrderByOrderAsc();
+    }
+
+    public Iterable<Quiz> createQuiz(int quizOrderNum, Map<String, String> quizInput) {
+        String quizTitle = quizInput.get("title");
+
+        int orderOfLastQuiz = getOrderNumOfLastQuiz();
+
+        if (quizOrderNum > orderOfLastQuiz + 1) {
+            throw new IllegalArgumentException(ErrorMessages.quizOrderNumTooHigh(quizOrderNum));
+        } else if (quizOrderNum == orderOfLastQuiz + 1) {
+        } else {
+            for (int i = orderOfLastQuiz; i >= quizOrderNum; i--) {
+                Quiz existingQuiz = quizRepository.findByOrder(i);
+                existingQuiz.setOrder(i + 1);
+                quizRepository.save(existingQuiz);
+            }
+        }
+
+        quizRepository.save(new Quiz(quizTitle, quizOrderNum));
 
         return quizRepository.findAllByOrderByOrderAsc();
     }
